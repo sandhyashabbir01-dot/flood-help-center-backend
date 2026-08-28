@@ -211,7 +211,7 @@ app.delete("/help/:id", async (req, res) => {
   }
 });
 
-
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
 // ==================== MONGODB CONNECTION ====================
 
 mongoose
