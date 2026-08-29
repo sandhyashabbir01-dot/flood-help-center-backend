@@ -18,12 +18,10 @@ app.use(
       "http://localhost:5174",
       "https://flood-help-center.vercel.app",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
   })
 );
-
-app.use(express.json());
-
 
 // ==================== SERVER TEST ====================
 
