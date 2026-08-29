@@ -16,7 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://flood-help-center-git-main-sandhya-proect.vercel.app",
+      "https://flood-help-center.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
