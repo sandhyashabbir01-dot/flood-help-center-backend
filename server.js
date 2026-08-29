@@ -10,25 +10,39 @@ const app = express();
 
 // ==================== CORS ====================
 
-const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://flood-help-center.vercel.app",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-};
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://flood-help-center.vercel.app",
+];
 
-app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
+
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 // ==================== JSON ====================
 
 app.use(express.json());
-
-// ==================== PREFLIGHT ====================
-
-app.options(/.*/, cors(corsOptions));
 
 // ==================== SERVER TEST ====================
 
