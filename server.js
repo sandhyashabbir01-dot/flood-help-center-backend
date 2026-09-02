@@ -8,6 +8,29 @@ const Help = require("./models/Help");
 
 const app = express();
 
+// ==================== ORDER SCHEMA & MODEL ====================
+
+const orderSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  address: { type: String, required: true },
+  items: [
+    {
+      id: Number,
+      name: String,
+      price: Number,
+      quantity: Number,
+      icon: String,
+    },
+  ],
+  totalAmount: { type: Number, required: true },
+  status: { type: String, default: "Pending" },
+  date: { type: String, default: () => new Date().toLocaleDateString() },
+});
+
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+
 // ==================== CORS ====================
 
 const allowedOrigins = [
@@ -85,6 +108,106 @@ app.post("/contact", async (req, res) => {
   }
 });
 
+// ==================== CUSTOMER ORDERS ====================
+
+app.post("/orders", async (req, res) => {
+  console.log("ORDER ROUTE HIT");
+  console.log("ORDER DATA RECEIVED:", req.body);
+
+  try {
+    const { name, email, phone, address, items, totalAmount } = req.body;
+
+    const newOrder = new Order({
+      name,
+      email,
+      phone,
+      address,
+      items,
+      totalAmount,
+    });
+
+    await newOrder.save();
+
+    res.json({
+      message: "Order placed successfully!",
+      order: newOrder,
+    });
+  } catch (error) {
+    console.log("Error saving order:", error);
+
+    res.status(500).json({
+      message: "Could not save order!",
+    });
+  }
+});
+
+// ==================== GET ALL CUSTOMER ORDERS ====================
+
+app.get("/orders", async (req, res) => {
+  console.log("GET CUSTOMER ORDERS");
+
+  try {
+    const orders = await Order.find().sort({
+      _id: -1,
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.log("Error getting customer orders:", error);
+
+    res.status(500).json({
+      message: "Could not get customer orders!",
+    });
+  }
+});
+
+// ==================== UPDATE ORDER STATUS ====================
+
+app.put("/orders/:id/status", async (req, res) => {
+  console.log("UPDATE ORDER STATUS:", req.params.id);
+
+  try {
+    const { status } = req.body;
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { returnDocument: "after" }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found!" });
+    }
+
+    res.json({
+      message: "Order status updated successfully!",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.log("Error updating order status:", error);
+    res.status(500).json({ message: "Could not update order status!" });
+  }
+});
+
+// ==================== DELETE ORDER ====================
+
+app.delete("/orders/:id", async (req, res) => {
+  console.log("DELETE ORDER:", req.params.id);
+
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(req.params.id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found!" });
+    }
+
+    res.json({ message: "Order deleted successfully!" });
+  } catch (error) {
+    console.log("Error deleting order:", error);
+    res.status(500).json({ message: "Could not delete order!" });
+  }
+});
+
 // ==================== SUBMIT HELP REQUEST ====================
 
 app.post("/help", async (req, res) => {
@@ -92,14 +215,7 @@ app.post("/help", async (req, res) => {
   console.log("HELP DATA RECEIVED:", req.body);
 
   try {
-    const {
-      name,
-      email,
-      phone,
-      area,
-      helpType,
-      message,
-    } = req.body;
+    const { name, email, phone, area, helpType, message } = req.body;
 
     const newHelp = new Help({
       name,

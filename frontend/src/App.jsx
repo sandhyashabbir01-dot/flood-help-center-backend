@@ -33,11 +33,12 @@ function Home() {
               Get Help
             </Link>
 
-            <Link
-              to="/affected-areas"
-              className="button secondary-button"
-            >
+            <Link to="/affected-areas" className="button secondary-button">
               Affected Areas
+            </Link>
+
+            <Link to="/products" className="button secondary-button">
+              Shop Products 🛒
             </Link>
           </div>
         </div>
@@ -53,13 +54,10 @@ function Home() {
             <h3>Affected Areas</h3>
 
             <p>
-              View information about areas affected by floods
-              and important updates.
+              View information about areas affected by floods and important updates.
             </p>
 
-            <Link to="/affected-areas">
-              Learn More →
-            </Link>
+            <Link to="/affected-areas">Learn More →</Link>
           </div>
 
           <div className="info-card">
@@ -68,13 +66,10 @@ function Home() {
             <h3>Emergency Help</h3>
 
             <p>
-              Find important emergency information and
-              assistance for people affected by floods.
+              Find important emergency information and assistance for people affected by floods.
             </p>
 
-            <Link to="/emergency">
-              Get Help →
-            </Link>
+            <Link to="/emergency">Get Help →</Link>
           </div>
 
           <div className="info-card">
@@ -83,16 +78,311 @@ function Home() {
             <h3>Request Help</h3>
 
             <p>
-              People affected by floods can submit a request
-              for assistance.
+              People affected by floods can submit a request for assistance.
             </p>
 
-            <Link to="/help">
-              Request Help →
-            </Link>
+            <Link to="/help">Request Help →</Link>
+          </div>
+
+          <div className="info-card">
+            <div className="card-icon">🛒</div>
+
+            <h3>Relief Products</h3>
+
+            <p>
+              Browse useful flood relief products and essential supplies.
+            </p>
+
+            <Link to="/products">View Products →</Link>
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+// ==================== PRODUCTS ====================
+
+function Products({ cart, addToCart, removeFromCart, updateQuantity, clearCart }) {
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+
+  const [customerDetails, setCustomerDetails] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  const products = [
+    {
+      id: 1,
+      name: "Food Relief Package",
+      price: 2000,
+      icon: "🥫",
+      description:
+        "Essential food supplies for families affected by flooding.",
+    },
+    {
+      id: 2,
+      name: "Clean Water Pack",
+      price: 500,
+      icon: "💧",
+      description:
+        "Clean drinking water supplies for emergency situations.",
+    },
+    {
+      id: 3,
+      name: "Medical First Aid Kit",
+      price: 1500,
+      icon: "🩹",
+      description:
+        "Basic first aid supplies for emergency needs.",
+    },
+    {
+      id: 4,
+      name: "Emergency Shelter Kit",
+      price: 3000,
+      icon: "🏕️",
+      description:
+        "Basic shelter supplies for families needing temporary support.",
+    },
+    {
+      id: 5,
+      name: "Emergency Essentials Kit",
+      price: 2500,
+      icon: "🎒",
+      description:
+        "A collection of useful emergency and relief supplies.",
+    },
+    {
+      id: 6,
+      name: "Hygiene Supplies Pack",
+      price: 1000,
+      icon: "🧼",
+      description:
+        "Essential hygiene items for flood-affected communities.",
+    },
+  ];
+
+  const cartCount = cart.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
+  const cartTotal = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const handleInputChange = (e) => {
+    setCustomerDetails({
+      ...customerDetails,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+
+    const orderData = {
+      name: customerDetails.name,
+      email: customerDetails.email,
+      phone: customerDetails.phone,
+      address: customerDetails.address,
+      items: cart,
+      totalAmount: cartTotal,
+    };
+
+    try {
+      await axios.post(API + "/orders", orderData);
+
+      alert(
+        `Thank you ${customerDetails.name}! Your order has been placed successfully.\nIt is now sent to the Admin Dashboard.`
+      );
+
+      clearCart();
+
+      setShowCheckoutForm(false);
+
+      setCustomerDetails({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+      });
+    } catch (error) {
+      console.error("Backend /orders post error:", error);
+
+      alert("Order could not be placed. Please try again.");
+    }
+  };
+
+  return (
+    <div className="page">
+      <h1>Relief Products 🛒</h1>
+
+      <p className="page-intro">
+        Browse essential products and supplies that can help support
+        flood-affected communities.
+      </p>
+
+      {/* ==================== CART ==================== */}
+
+      <div className="cart-box">
+        <h2>Your Cart 🛒</h2>
+
+        <p>
+          Cart Items: <strong>{cartCount}</strong>
+        </p>
+
+        {cart.length === 0 ? (
+          <p>Your cart is empty.</p>
+        ) : (
+          <>
+            {cart.map((item) => (
+              <div className="cart-item" key={item.id}>
+                <span>
+                  {item.icon} {item.name}
+                </span>
+
+                <div className="quantity-controls">
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.id, -1)}
+                  >
+                    −
+                  </button>
+
+                  <strong>{item.quantity}</strong>
+
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.id, 1)}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <strong>
+                  Rs.{" "}
+                  {(item.price * item.quantity).toLocaleString()}
+                </strong>
+
+                <button
+                  type="button"
+                  className="delete-button"
+                  onClick={() => removeFromCart(item.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            <div className="cart-total">
+              Total: Rs. {cartTotal.toLocaleString()}
+            </div>
+
+            <button
+              type="button"
+              className="button"
+              onClick={() => setShowCheckoutForm(true)}
+            >
+              Checkout 🛒
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* ==================== CHECKOUT FORM ==================== */}
+
+      {showCheckoutForm && (
+        <div className="checkout-form-container">
+          <h2>Shipping & Contact Information</h2>
+
+          <form
+            className="contact-form"
+            onSubmit={handleOrderSubmit}
+          >
+            <input
+              type="text"
+              name="name"
+              placeholder="Your Full Name"
+              value={customerDetails.name}
+              onChange={handleInputChange}
+              required
+            />
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Your Email Address"
+              value={customerDetails.email}
+              onChange={handleInputChange}
+              required
+            />
+
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              value={customerDetails.phone}
+              onChange={handleInputChange}
+              required
+            />
+
+            <textarea
+              name="address"
+              placeholder="Delivery Address"
+              value={customerDetails.address}
+              onChange={handleInputChange}
+              required
+            />
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginTop: "10px",
+              }}
+            >
+              <button type="submit" className="button">
+                Confirm & Place Order
+              </button>
+
+              <button
+                type="button"
+                className="button delete-button"
+                onClick={() => setShowCheckoutForm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ==================== PRODUCTS ==================== */}
+
+      <div className="products-grid">
+        {products.map((product) => (
+          <div className="product-card" key={product.id}>
+            <div className="product-icon">{product.icon}</div>
+
+            <h2>{product.name}</h2>
+
+            <p>{product.description}</p>
+
+            <h3>Rs. {product.price.toLocaleString()}</h3>
+
+            <button
+              className="button"
+              onClick={() => addToCart(product)}
+            >
+              Add to Cart 🛒
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -105,15 +395,13 @@ function About() {
       <h1>About Flood Help Center</h1>
 
       <p>
-        Flood Help Center is an information platform designed
-        to provide useful flood-related information and connect
-        people with available assistance.
+        Flood Help Center is an information platform designed to provide useful
+        flood-related information and connect people with available assistance.
       </p>
 
       <p>
-        Our goal is to make important flood information easier
-        to find and help affected communities submit assistance
-        requests.
+        Our goal is to make important flood information easier to find and help
+        affected communities submit assistance requests.
       </p>
     </div>
   );
@@ -134,12 +422,10 @@ function Contact() {
     };
 
     try {
-      const response = await axios.post(
-        API + "/contact",
-        data
-      );
+      const response = await axios.post(API + "/contact", data);
 
       alert(response.data.message);
+
       form.reset();
     } catch (error) {
       console.error(error);
@@ -151,38 +437,16 @@ function Contact() {
     <div className="page narrow-page">
       <h1>Contact Us</h1>
 
-      <p>
-        Have a question or need more information?
-        Contact us.
-      </p>
+      <p>Have a question or need more information? Contact us.</p>
 
-      <form
-        className="contact-form"
-        onSubmit={handleSubmit}
-      >
-        <input
-          type="text"
-          name="name"
-          placeholder="Your Name"
-          required
-        />
+      <form className="contact-form" onSubmit={handleSubmit}>
+        <input type="text" name="name" placeholder="Your Name" required />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Your Email"
-          required
-        />
+        <input type="email" name="email" placeholder="Your Email" required />
 
-        <textarea
-          name="message"
-          placeholder="Your Message"
-          required
-        />
+        <textarea name="message" placeholder="Your Message" required />
 
-        <button type="submit">
-          Send Message
-        </button>
+        <button type="submit">Send Message</button>
       </form>
     </div>
   );
@@ -217,39 +481,30 @@ function AffectedAreas() {
       <h1>Affected Areas</h1>
 
       <p className="page-intro">
-        Find information about areas affected by flooding
-        and the type of assistance that may be needed.
+        Find information about areas affected by flooding and the type of assistance
+        that may be needed.
       </p>
 
       <div className="area-cards">
         {areas.map((area) => (
-          <div
-            className="area-card"
-            key={area.name}
-          >
+          <div className="area-card" key={area.name}>
             <div className="area-icon">📍</div>
 
             <h2>{area.name}</h2>
 
             <p>
-              <strong>Status:</strong>{" "}
-              {area.status}
+              <strong>Status:</strong> {area.status}
             </p>
 
             <p>
-              <strong>People:</strong>{" "}
-              {area.people}
+              <strong>People:</strong> {area.people}
             </p>
 
             <p>
-              <strong>Help Needed:</strong>{" "}
-              {area.help}
+              <strong>Help Needed:</strong> {area.help}
             </p>
 
-            <Link
-              to="/help"
-              className="button"
-            >
+            <Link to="/help" className="button">
               Request Help
             </Link>
           </div>
@@ -267,26 +522,20 @@ function Emergency() {
       <h1>Emergency Help</h1>
 
       <p className="page-intro">
-        If you are affected by flooding or someone nearby
-        needs urgent assistance, use the information below.
+        If you are affected by flooding or someone nearby needs urgent assistance, use the information below.
       </p>
 
       <div className="emergency-cards">
-
         <div className="emergency-card">
           <div className="emergency-icon">🚑</div>
 
           <h2>Rescue Assistance</h2>
 
           <p>
-            If people need immediate rescue, seek help from
-            appropriate local emergency services.
+            If people need immediate rescue, seek help from appropriate local emergency services.
           </p>
 
-          <Link
-            to="/help"
-            className="button"
-          >
+          <Link to="/help" className="button">
             Request Rescue
           </Link>
         </div>
@@ -297,15 +546,10 @@ function Emergency() {
           <h2>Medical Assistance</h2>
 
           <p>
-            People who need medical assistance should seek
-            help from nearby hospitals, clinics or emergency
-            medical teams.
+            People who need medical assistance should seek help from nearby hospitals, clinics or emergency medical teams.
           </p>
 
-          <Link
-            to="/help"
-            className="button"
-          >
+          <Link to="/help" className="button">
             Request Medical Help
           </Link>
         </div>
@@ -316,14 +560,10 @@ function Emergency() {
           <h2>Temporary Shelter</h2>
 
           <p>
-            Families displaced by flooding may need a safe
-            temporary place to stay.
+            Families displaced by flooding may need a safe temporary place to stay.
           </p>
 
-          <Link
-            to="/help"
-            className="button"
-          >
+          <Link to="/help" className="button">
             Request Shelter
           </Link>
         </div>
@@ -334,40 +574,28 @@ function Emergency() {
           <h2>Food & Clean Water</h2>
 
           <p>
-            Flood-affected communities may require food,
-            drinking water and other essential supplies.
+            Flood-affected communities may require food, drinking water and other essential supplies.
           </p>
 
-          <Link
-            to="/help"
-            className="button"
-          >
+          <Link to="/help" className="button">
             Request Supplies
           </Link>
         </div>
-
       </div>
 
       <div className="page-intro">
         <h2>⚠️ Flood Safety Tips</h2>
 
         <p>
-          Move to a safe and higher location if flooding is
-          increasing. Avoid walking or driving through moving
-          floodwater and follow instructions from local
-          authorities.
+          Move to a safe and higher location if flooding is increasing. Avoid walking or driving through moving floodwater and follow instructions from local authorities.
         </p>
 
         <p>
-          Keep important documents, drinking water, medicines
-          and essential items in a safe place.
+          Keep important documents, drinking water, medicines and essential items in a safe place.
         </p>
       </div>
 
-      <Link
-        to="/help"
-        className="button"
-      >
+      <Link to="/help" className="button">
         Request Help
       </Link>
     </div>
@@ -392,12 +620,10 @@ function Help() {
     };
 
     try {
-      const response = await axios.post(
-        API + "/help",
-        data
-      );
+      const response = await axios.post(API + "/help", data);
 
       alert(response.data.message);
+
       form.reset();
     } catch (error) {
       console.error(error);
@@ -407,91 +633,40 @@ function Help() {
 
   return (
     <div className="page narrow-page">
-
       <h1>Request Flood Assistance</h1>
 
       <p>
-        If you or someone in your area needs help due to flooding,
-        please provide the details below. Your request will be
-        reviewed by our support team.
+        If you or someone in your area needs help due to flooding, please provide the details below. Your request will be reviewed by our support team.
       </p>
 
-      <form
-        className="contact-form"
-        onSubmit={handleSubmit}
-      >
+      <form className="contact-form" onSubmit={handleSubmit}>
+        <input type="text" name="name" placeholder="Your Name" required />
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Your Name"
-          required
-        />
+        <input type="email" name="email" placeholder="Your Email" required />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Your Email"
-          required
-        />
+        <input type="tel" name="phone" placeholder="Phone Number" required />
 
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone Number"
-          required
-        />
+        <input type="text" name="area" placeholder="Affected Area / City" required />
 
-        <input
-          type="text"
-          name="area"
-          placeholder="Affected Area / City"
-          required
-        />
+        <select name="helpType" required>
+          <option value="">Select Help Needed</option>
 
-        <select
-          name="helpType"
-          required
-        >
-          <option value="">
-            Select Help Needed
-          </option>
+          <option value="Food">Food</option>
 
-          <option value="Food">
-            Food
-          </option>
+          <option value="Water">Water</option>
 
-          <option value="Water">
-            Water
-          </option>
+          <option value="Medical">Medical Help</option>
 
-          <option value="Medical">
-            Medical Help
-          </option>
+          <option value="Shelter">Shelter</option>
 
-          <option value="Shelter">
-            Shelter
-          </option>
+          <option value="Rescue">Rescue</option>
 
-          <option value="Rescue">
-            Rescue
-          </option>
-
-          <option value="Other">
-            Other
-          </option>
+          <option value="Other">Other</option>
         </select>
 
-        <textarea
-          name="message"
-          placeholder="Describe your situation"
-          required
-        />
+        <textarea name="message" placeholder="Describe your situation" required />
 
-        <button type="submit">
-          Submit Help Request
-        </button>
-
+        <button type="submit">Submit Help Request</button>
       </form>
     </div>
   );
@@ -508,14 +683,8 @@ function AdminLogin() {
   const handleLogin = (event) => {
     event.preventDefault();
 
-    if (
-      username === "shahzad" &&
-      password === "mansahera"
-    ) {
-      sessionStorage.setItem(
-        "adminLoggedIn",
-        "true"
-      );
+    if (username === "shahzad" && password === "mansahera") {
+      sessionStorage.setItem("adminLoggedIn", "true");
 
       alert("Admin login successful!");
 
@@ -527,25 +696,16 @@ function AdminLogin() {
 
   return (
     <div className="page narrow-page">
-
       <h1>Admin Login</h1>
 
-      <p>
-        Enter your admin username and password.
-      </p>
+      <p>Enter your admin username and password.</p>
 
-      <form
-        className="contact-form"
-        onSubmit={handleLogin}
-      >
-
+      <form className="contact-form" onSubmit={handleLogin}>
         <input
           type="text"
           placeholder="Admin Username"
           value={username}
-          onChange={(event) =>
-            setUsername(event.target.value)
-          }
+          onChange={(event) => setUsername(event.target.value)}
           required
         />
 
@@ -553,16 +713,11 @@ function AdminLogin() {
           type="password"
           placeholder="Admin Password"
           value={password}
-          onChange={(event) =>
-            setPassword(event.target.value)
-          }
+          onChange={(event) => setPassword(event.target.value)}
           required
         />
 
-        <button type="submit">
-          Login
-        </button>
-
+        <button type="submit">Login</button>
       </form>
     </div>
   );
@@ -572,6 +727,7 @@ function AdminLogin() {
 
 function AdminRequests() {
   const [requests, setRequests] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [searchText, setSearchText] = useState("");
@@ -580,21 +736,24 @@ function AdminRequests() {
 
   const navigate = useNavigate();
 
-  const isLoggedIn =
-    sessionStorage.getItem("adminLoggedIn") === "true";
+  const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
 
-  // ==================== GET REQUESTS ====================
+  // ==================== GET DATA ====================
 
-  const getRequests = async () => {
+  const getData = async () => {
     try {
-      const response = await axios.get(
-        API + "/help"
-      );
+      const responseRequests = await axios.get(API + "/help");
+      setRequests(responseRequests.data);
 
-      setRequests(response.data);
+      try {
+        const responseOrders = await axios.get(API + "/orders");
+        setOrders(responseOrders.data);
+      } catch (e) {
+        console.log("No orders API route found or fetch failed:", e);
+      }
     } catch (error) {
       console.error(error);
-      alert("Could not load help requests!");
+      alert("Could not load dashboard data!");
     } finally {
       setLoading(false);
     }
@@ -602,38 +761,41 @@ function AdminRequests() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      getRequests();
+      getData();
     } else {
       setLoading(false);
     }
   }, [isLoggedIn]);
 
-  // ==================== DELETE REQUEST ====================
+  // ==================== DELETE REQUEST / ORDER ====================
 
   const deleteRequest = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this help request?"
-    );
-
-    if (!confirmDelete) {
+    if (!window.confirm("Are you sure you want to delete this help request?")) {
       return;
     }
 
     try {
-      const response = await axios.delete(
-        API + "/help/" + id
-      );
-
+      const response = await axios.delete(API + "/help/" + id);
       alert(response.data.message);
-
-      setRequests((previousRequests) =>
-        previousRequests.filter(
-          (request) => request._id !== id
-        )
-      );
+      setRequests((prev) => prev.filter((r) => r._id !== id));
     } catch (error) {
       console.error(error);
-      alert("Could not delete help request!");
+      alert("Could not delete request!");
+    }
+  };
+
+  const deleteOrder = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product order?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(API + "/orders/" + id);
+      alert("Order deleted successfully!");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setOrders((prev) => prev.filter((o) => (o._id || o.id) !== id));
     }
   };
 
@@ -641,24 +803,14 @@ function AdminRequests() {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      const response = await axios.put(
-        API + "/help/" + id + "/status",
-        {
-          status: newStatus,
-        }
-      );
+      const response = await axios.put(API + "/help/" + id + "/status", {
+        status: newStatus,
+      });
 
       alert(response.data.message);
 
-      setRequests((previousRequests) =>
-        previousRequests.map((request) =>
-          request._id === id
-            ? {
-                ...request,
-                status: newStatus,
-              }
-            : request
-        )
+      setRequests((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status: newStatus } : r))
       );
     } catch (error) {
       console.error(error);
@@ -666,102 +818,62 @@ function AdminRequests() {
     }
   };
 
+  const updateOrderStatus = async (id, newStatus) => {
+    try {
+      await axios.put(API + "/orders/" + id + "/status", {
+        status: newStatus,
+      });
+      alert("Order status updated!");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setOrders((prev) =>
+        prev.map((o) =>
+          (o._id || o.id) === id ? { ...o, status: newStatus } : o
+        )
+      );
+    }
+  };
+
   // ==================== LOGOUT ====================
 
   const logout = () => {
-    sessionStorage.removeItem(
-      "adminLoggedIn"
-    );
-
+    sessionStorage.removeItem("adminLoggedIn");
     navigate("/admin");
   };
 
-  // ==================== PROTECTION ====================
-
   if (!isLoggedIn) {
-    return (
-      <Navigate
-        to="/admin"
-        replace
-      />
-    );
+    return <Navigate to="/admin" replace />;
   }
 
-  // ==================== RECENT REQUESTS ====================
+  // ==================== FILTER REQUESTS ====================
 
-  const recentRequests = requests.slice(0, 3);
+  const filteredRequests = requests.filter((request) => {
+    const search = searchText.toLowerCase().trim();
+    const name = request.name?.toLowerCase() || "";
+    const area = request.area?.toLowerCase() || "";
+    const helpType = request.helpType?.toLowerCase() || "";
 
-  // ==================== FILTER ====================
+    const matchesSearch =
+      name.includes(search) || area.includes(search) || helpType.includes(search);
 
-  const filteredRequests = requests.filter(
-    (request) => {
-      const search =
-        searchText.toLowerCase().trim();
+    const matchesFilter =
+      filterType === "All" || request.helpType === filterType;
 
-      const name =
-        request.name?.toLowerCase() || "";
+    const matchesStatus =
+      statusFilter === "All" || (request.status || "Pending") === statusFilter;
 
-      const area =
-        request.area?.toLowerCase() || "";
-
-      const helpType =
-        request.helpType?.toLowerCase() || "";
-
-      const matchesSearch =
-        name.includes(search) ||
-        area.includes(search) ||
-        helpType.includes(search);
-
-      const matchesFilter =
-        filterType === "All" ||
-        request.helpType === filterType;
-
-      const matchesStatus =
-        statusFilter === "All" ||
-        (request.status || "Pending") ===
-          statusFilter;
-
-      return (
-        matchesSearch &&
-        matchesFilter &&
-        matchesStatus
-      );
-    }
-  );
+    return matchesSearch && matchesFilter && matchesStatus;
+  });
 
   // ==================== COUNTS ====================
 
-  const foodCount = requests.filter(
-    (request) =>
-      request.helpType === "Food"
-  ).length;
-
-  const waterCount = requests.filter(
-    (request) =>
-      request.helpType === "Water"
-  ).length;
-
-  const medicalCount = requests.filter(
-    (request) =>
-      request.helpType === "Medical"
-  ).length;
-
-  const shelterCount = requests.filter(
-    (request) =>
-      request.helpType === "Shelter"
-  ).length;
-
-  const rescueCount = requests.filter(
-    (request) =>
-      request.helpType === "Rescue"
-  ).length;
-
-  const otherCount = requests.filter(
-    (request) =>
-      request.helpType === "Other"
-  ).length;
-
-  // ==================== ANALYTICS MAX ====================
+  const foodCount = requests.filter((r) => r.helpType === "Food").length;
+  const waterCount = requests.filter((r) => r.helpType === "Water").length;
+  const medicalCount = requests.filter((r) => r.helpType === "Medical").length;
+  const shelterCount = requests.filter((r) => r.helpType === "Shelter").length;
+  const rescueCount = requests.filter((r) => r.helpType === "Rescue").length;
+  const otherCount = requests.filter((r) => r.helpType === "Other").length;
 
   const maxCount = Math.max(
     foodCount,
@@ -770,782 +882,453 @@ function AdminRequests() {
     shelterCount,
     rescueCount,
     otherCount,
-    1
   );
 
-  const getBarWidth = (count) => {
-    return `${(count / maxCount) * 100}%`;
-  };
-
-  // ==================== STATUS COUNTS ====================
-
-  const pendingCount = requests.filter(
-    (request) =>
-      (request.status || "Pending") ===
-      "Pending"
-  ).length;
-
-  const inProgressCount = requests.filter(
-    (request) =>
-      request.status === "In Progress"
-  ).length;
-
-  const completedCount = requests.filter(
-    (request) =>
-      request.status === "Completed"
-  ).length;
-
-  // ==================== DASHBOARD ====================
+  const getBarWidth = (count) => `${(count / maxCount) * 100}%`;
+  const recentRequests = requests.slice(0, 3);
 
   return (
     <div className="page admin-page">
+      <div className="admin-header">
+        <div>
+          <h1>Admin Dashboard</h1>
 
-      <h1>Admin - Help Requests</h1>
+          <p>Manage flood assistance requests & customer orders.</p>
+        </div>
 
-      <p className="page-intro">
-        View and manage all help requests
-        submitted by flood-affected people.
-      </p>
-
-      {/* LOGOUT */}
-
-      <button
-        className="delete-button"
-        onClick={logout}
-      >
-        Logout
-      </button>
-
-      {/* SEARCH + FILTER */}
-
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-          marginTop: "30px",
-          marginBottom: "25px",
-          flexWrap: "wrap",
-        }}
-      >
-
-        {/* SEARCH */}
-
-        <input
-          type="text"
-          placeholder="Search by name, area or help type..."
-          value={searchText}
-          onChange={(event) =>
-            setSearchText(event.target.value)
-          }
-          style={{
-            flex: "1",
-            minWidth: "250px",
-            padding: "12px",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            fontSize: "16px",
-          }}
-        />
-
-        {/* HELP TYPE FILTER */}
-
-        <select
-          value={filterType}
-          onChange={(event) =>
-            setFilterType(event.target.value)
-          }
-          style={{
-            minWidth: "180px",
-            padding: "12px",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            fontSize: "16px",
-          }}
-        >
-          <option value="All">
-            All Requests
-          </option>
-
-          <option value="Food">
-            Food
-          </option>
-
-          <option value="Water">
-            Water
-          </option>
-
-          <option value="Medical">
-            Medical
-          </option>
-
-          <option value="Shelter">
-            Shelter
-          </option>
-
-          <option value="Rescue">
-            Rescue
-          </option>
-
-          <option value="Other">
-            Other
-          </option>
-        </select>
-
-        {/* STATUS FILTER */}
-
-        <select
-          value={statusFilter}
-          onChange={(event) =>
-            setStatusFilter(event.target.value)
-          }
-          style={{
-            minWidth: "180px",
-            padding: "12px",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            fontSize: "16px",
-          }}
-        >
-          <option value="All">
-            All Statuses
-          </option>
-
-          <option value="Pending">
-            Pending
-          </option>
-
-          <option value="In Progress">
-            In Progress
-          </option>
-
-          <option value="Completed">
-            Completed
-          </option>
-        </select>
-
-        {/* CLEAR FILTERS */}
-
-        <button
-          type="button"
-          onClick={() => {
-            setSearchText("");
-            setFilterType("All");
-            setStatusFilter("All");
-          }}
-          style={{
-            padding: "12px 18px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: "#111827",
-            color: "#ffffff",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
-        >
-          Clear Filters
+        <button className="button" onClick={logout}>
+          Logout
         </button>
-
       </div>
 
-      {/* SUMMARY */}
+      {/* ==================== SUMMARY ==================== */}
 
       <div className="admin-summary">
-
-        {/* TOTAL */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setStatusFilter("All");
-            setFilterType("All");
-          }}
-          style={{
-            backgroundColor: "#334155",
-            color: "#ffffff",
-            cursor: "pointer",
-          }}
-        >
+        <div className="summary-card">
           <h3>Total Requests</h3>
-
-          <strong>
-            {requests.length}
-          </strong>
+          <strong>{requests.length}</strong>
         </div>
 
-        {/* PENDING */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setStatusFilter("Pending");
-            setFilterType("All");
-          }}
-          style={{
-            backgroundColor: "#cbd5e1",
-            color: "#111827",
-            cursor: "pointer",
-          }}
-        >
-          <h3>Pending</h3>
-
-          <strong>
-            {pendingCount}
-          </strong>
+        <div className="summary-card">
+          <h3>Total Orders</h3>
+          <strong>{orders.length}</strong>
         </div>
 
-        {/* IN PROGRESS */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setStatusFilter("In Progress");
-            setFilterType("All");
-          }}
-          style={{
-            backgroundColor: "#0f766e",
-            color: "#ffffff",
-            cursor: "pointer",
-          }}
-        >
-          <h3>In Progress</h3>
-
-          <strong>
-            {inProgressCount}
-          </strong>
-        </div>
-
-        {/* COMPLETED */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setStatusFilter("Completed");
-            setFilterType("All");
-          }}
-          style={{
-            backgroundColor: "#000000",
-            color: "#ffffff",
-            cursor: "pointer",
-          }}
-        >
-          <h3>Completed</h3>
-
-          <strong>
-            {completedCount}
-          </strong>
-        </div>
-
-        {/* FOOD */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setFilterType("Food");
-            setStatusFilter("All");
-          }}
-          style={{
-            cursor: "pointer",
-          }}
-        >
+        <div className="summary-card">
           <h3>Food</h3>
-
-          <strong>
-            {foodCount}
-          </strong>
+          <strong>{foodCount}</strong>
         </div>
 
-        {/* WATER */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setFilterType("Water");
-            setStatusFilter("All");
-          }}
-          style={{
-            cursor: "pointer",
-          }}
-        >
+        <div className="summary-card">
           <h3>Water</h3>
-
-          <strong>
-            {waterCount}
-          </strong>
+          <strong>{waterCount}</strong>
         </div>
 
-        {/* MEDICAL */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setFilterType("Medical");
-            setStatusFilter("All");
-          }}
-          style={{
-            cursor: "pointer",
-          }}
-        >
+        <div className="summary-card">
           <h3>Medical</h3>
-
-          <strong>
-            {medicalCount}
-          </strong>
+          <strong>{medicalCount}</strong>
         </div>
 
-        {/* SHELTER */}
-
-        <div
-          className="summary-card"
-          onClick={() => {
-            setFilterType("Shelter");
-            setStatusFilter("All");
-          }}
-          style={{
-            cursor: "pointer",
-          }}
-        >
+        <div className="summary-card">
           <h3>Shelter</h3>
-
-          <strong>
-            {shelterCount}
-          </strong>
-        </div>
-
-      </div>
-
-      {/* ANALYTICS */}
-
-      <div className="analytics-section">
-
-        <h2>📊 Help Request Analytics</h2>
-
-        <div className="analytics-bars">
-
-          <div className="analytics-item">
-            <span>Food</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(foodCount),
-                }}
-              >
-                {foodCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-item">
-            <span>Water</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(waterCount),
-                }}
-              >
-                {waterCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-item">
-            <span>Medical</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(medicalCount),
-                }}
-              >
-                {medicalCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-item">
-            <span>Shelter</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(shelterCount),
-                }}
-              >
-                {shelterCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-item">
-            <span>Rescue</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(rescueCount),
-                }}
-              >
-                {rescueCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-item">
-            <span>Other</span>
-
-            <div className="bar">
-              <div
-                className="bar-fill"
-                style={{
-                  width: getBarWidth(otherCount),
-                }}
-              >
-                {otherCount}
-              </div>
-            </div>
-          </div>
-
+          <strong>{shelterCount}</strong>
         </div>
       </div>
 
-      {/* RECENT REQUESTS */}
+      {/* ==================== CUSTOMER ORDERS SECTION ==================== */}
 
-      <div className="recent-requests-section">
+      <div className="admin-section">
+        <h2>🛍️ Customer Orders</h2>
 
-        <h2>🕐 Recent Requests</h2>
+        {loading ? (
+          <p>Loading orders...</p>
+        ) : orders.length === 0 ? (
+          <p>No customer orders placed yet.</p>
+        ) : (
+          <div className="requests-list">
+            {orders.map((order, idx) => {
+              const orderId = order._id || order.id || idx;
+              return (
+                <div className="request-card" key={orderId}>
+                  <div className="request-header">
+                    <h3>Customer: {order.name}</h3>
+
+                    <button
+                      className="delete-button"
+                      onClick={() => deleteOrder(orderId)}
+                    >
+                      Delete Order
+                    </button>
+                  </div>
+
+                  <p>
+                    <strong>Email:</strong> {order.email || "N/A"}
+                  </p>
+
+                  <p>
+                    <strong>Phone:</strong> {order.phone || "N/A"}
+                  </p>
+
+                  <p>
+                    <strong>Address:</strong> {order.address || "N/A"}
+                  </p>
+
+                  <p>
+                    <strong>Order Date:</strong> {order.date || "N/A"}
+                  </p>
+
+                  <div>
+                    <strong>Ordered Products:</strong>
+                    <ul>
+                      {order.items &&
+                        order.items.map((item, i) => (
+                          <li key={i}>
+                            {item.icon} {item.name} x {item.quantity} (Rs.{" "}
+                            {(item.price * item.quantity).toLocaleString()})
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+
+                  <p style={{ marginTop: "5px" }}>
+                    <strong>Total Amount:</strong> Rs.{" "}
+                    {order.totalAmount
+                      ? order.totalAmount.toLocaleString()
+                      : "0"}
+                  </p>
+
+                  <div className="status-section">
+                    <strong>Order Status:</strong>
+
+                    <select
+                      value={order.status || "Pending"}
+                      onChange={(e) =>
+                        updateOrderStatus(orderId, e.target.value)
+                      }
+                    >
+                      <option value="Pending">🟡 Pending</option>
+
+                      <option value="In Progress">🔵 Processing</option>
+
+                      <option value="Completed">🟢 Completed</option>
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ==================== ANALYTICS ==================== */}
+
+      <div className="admin-section">
+        <h2>Request Analytics</h2>
+
+        <div className="analytics-list">
+          <div className="analytics-item">
+            <div className="analytics-label">
+              <span>Food</span>
+              <strong>{foodCount}</strong>
+            </div>
+
+            <div className="analytics-bar">
+              <div
+                className="analytics-fill"
+                style={{ width: getBarWidth(foodCount) }}
+              />
+            </div>
+          </div>
+
+          <div className="analytics-item">
+            <div className="analytics-label">
+              <span>Water</span>
+              <strong>{waterCount}</strong>
+            </div>
+
+            <div className="analytics-bar">
+              <div
+                className="analytics-fill"
+                style={{ width: getBarWidth(waterCount) }}
+              />
+            </div>
+          </div>
+
+          <div className="analytics-item">
+            <div className="analytics-label">
+              <span>Medical</span>
+              <strong>{medicalCount}</strong>
+            </div>
+
+            <div className="analytics-bar">
+              <div
+                className="analytics-fill"
+                style={{ width: getBarWidth(medicalCount) }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ==================== RECENT REQUESTS ==================== */}
+
+      <div className="admin-section">
+        <h2>Recent Help Requests</h2>
 
         {recentRequests.length === 0 ? (
-
-          <p>No recent requests available.</p>
-
+          <p>No recent requests.</p>
         ) : (
-
           <div className="recent-requests">
-
             {recentRequests.map((request) => (
-
-              <div
-                className="recent-request-card"
-                key={request._id}
-              >
-
-                <div className="recent-request-header">
-
-                  <h3>
-                    {request.name}
-                  </h3>
-
-                  <span>
-                    {request.helpType}
-                  </span>
-
-                </div>
+              <div className="request-card" key={request._id}>
+                <h3>{request.name}</h3>
 
                 <p>
-                  📧 {request.email}
+                  <strong>Area:</strong> {request.area}
                 </p>
 
                 <p>
-                  📅{" "}
-                  {request.createdAt
-                    ? new Date(
-                        request.createdAt
-                      ).toLocaleDateString()
-                    : "Not available"}
+                  <strong>Help:</strong> {request.helpType}
                 </p>
 
+                <p>
+                  <strong>Status:</strong> {request.status || "Pending"}
+                </p>
               </div>
-
             ))}
-
           </div>
-
         )}
-
       </div>
 
-      {/* ALL REQUESTS */}
+      {/* ==================== SEARCH & FILTER ==================== */}
 
-      <div className="all-requests-heading">
+      <div className="admin-section">
+        <h2>All Help Requests</h2>
 
-        <h2>📋 All Help Requests</h2>
+        <div className="admin-filters">
+          <input
+            type="text"
+            placeholder="Search by name, area or help type..."
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+          />
 
-        <p>
-          View, update and manage all submitted requests.
-        </p>
+          <select
+            value={filterType}
+            onChange={(event) => setFilterType(event.target.value)}
+          >
+            <option value="All">All Help Types</option>
 
-      </div>
+            <option value="Food">Food</option>
 
-      {/* REQUESTS */}
+            <option value="Water">Water</option>
 
-      {loading ? (
+            <option value="Medical">Medical</option>
 
-        <p>
-          Loading requests...
-        </p>
+            <option value="Shelter">Shelter</option>
 
-      ) : requests.length === 0 ? (
+            <option value="Rescue">Rescue</option>
 
-        <p>
-          No help requests have been submitted yet.
-        </p>
+            <option value="Other">Other</option>
+          </select>
 
-      ) : filteredRequests.length === 0 ? (
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="All">All Status</option>
 
-        <p>
-          No requests match your search or filter.
-        </p>
+            <option value="Pending">Pending</option>
 
-      ) : (
+            <option value="In Progress">In Progress</option>
 
-        <div className="admin-requests">
-
-          {filteredRequests.map(
-            (request) => (
-
-              <div
-                className="admin-request-card"
-                key={request._id}
-              >
-
-                <div className="request-header">
-
-                  <h2>
-                    {request.name}
-                  </h2>
-
-                  <span>
-                    {request.helpType}
-                  </span>
-
-                </div>
-
-                <p>
-                  <strong>
-                    📧 Email:
-                  </strong>{" "}
-                  {request.email}
-                </p>
-
-                <p>
-                  <strong>
-                    📞 Phone:
-                  </strong>{" "}
-                  {request.phone}
-                </p>
-
-                <p>
-                  <strong>
-                    📍 Area:
-                  </strong>{" "}
-                  {request.area}
-                </p>
-
-                <p>
-                  <strong>
-                    📝 Message:
-                  </strong>{" "}
-                  {request.message}
-                </p>
-
-                <p>
-                  <strong>
-                    📅 Submitted:
-                  </strong>{" "}
-                  {request.createdAt
-                    ? new Date(
-                        request.createdAt
-                      ).toLocaleString()
-                    : "Not available"}
-                </p>
-
-                {/* STATUS */}
-
-                <div
-                  style={{
-                    marginTop: "15px",
-                    marginBottom: "15px",
-                  }}
-                >
-
-                  <strong>
-                    📌 Status:
-                  </strong>{" "}
-
-                  <select
-                    value={
-                      request.status ||
-                      "Pending"
-                    }
-                    onChange={(event) =>
-                      updateStatus(
-                        request._id,
-                        event.target.value
-                      )
-                    }
-                    style={{
-                      marginLeft: "8px",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      border:
-                        "1px solid #d1d5db",
-                      fontWeight: "600",
-
-                      backgroundColor:
-                        request.status ===
-                        "Completed"
-                          ? "#000000"
-                          : request.status ===
-                            "In Progress"
-                          ? "#0f766e"
-                          : "#cbd5e1",
-
-                      color:
-                        request.status ===
-                        "Pending"
-                          ? "#111827"
-                          : "#ffffff",
-                    }}
-                  >
-
-                    <option value="Pending">
-                      ● Pending
-                    </option>
-
-                    <option value="In Progress">
-                      ● In Progress
-                    </option>
-
-                    <option value="Completed">
-                      ● Completed
-                    </option>
-
-                  </select>
-
-                </div>
-
-                {/* DELETE */}
-
-                <button
-                  className="delete-button"
-                  onClick={() =>
-                    deleteRequest(
-                      request._id
-                    )
-                  }
-                >
-                  🗑️ Delete Request
-                </button>
-
-              </div>
-
-            )
-          )}
-
+            <option value="Completed">Completed</option>
+          </select>
         </div>
 
-      )}
+        {/* ==================== REQUEST LIST ==================== */}
 
+        {loading ? (
+          <p>Loading requests...</p>
+        ) : filteredRequests.length === 0 ? (
+          <p>No help requests found.</p>
+        ) : (
+          <div className="requests-list">
+            {filteredRequests.map((request) => (
+              <div className="request-card" key={request._id}>
+                <div className="request-header">
+                  <h3>{request.name}</h3>
+
+                  <button
+                    className="delete-button"
+                    onClick={() => deleteRequest(request._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                <p>
+                  <strong>Email:</strong> {request.email || "Not provided"}
+                </p>
+
+                <p>
+                  <strong>Phone:</strong> {request.phone}
+                </p>
+
+                <p>
+                  <strong>Area:</strong> {request.area}
+                </p>
+
+                <p>
+                  <strong>Help Needed:</strong> {request.helpType}
+                </p>
+
+                <p>
+                  <strong>Message:</strong> {request.message}
+                </p>
+
+                <div className="status-section">
+                  <strong>Status:</strong>
+
+                  <select
+                    value={request.status || "Pending"}
+                    onChange={(event) =>
+                      updateStatus(request._id, event.target.value)
+                    }
+                  >
+                    <option value="Pending">🟡 Pending</option>
+
+                    <option value="In Progress">🔵 In Progress</option>
+
+                    <option value="Completed">🟢 Completed</option>
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// ==================== MAIN APP ====================
+// ==================== NAVBAR ====================
+
+function Navbar() {
+  const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+
+  return (
+    <nav className="navbar">
+      <div className="nav-logo">
+        <Link to="/">Flood Help Center</Link>
+      </div>
+
+      <div className="nav-links">
+        <Link to="/">Home</Link>
+
+        <Link to="/affected-areas">Affected Areas</Link>
+
+        <Link to="/emergency">Emergency</Link>
+
+        <Link to="/help">Request Help</Link>
+
+        <Link to="/products">Products</Link>
+
+        <Link to="/about">About</Link>
+
+        <Link to="/contact">Contact</Link>
+
+        {isLoggedIn ? (
+          <Link to="/admin/dashboard">Admin Dashboard</Link>
+        ) : (
+          <Link to="/admin">Admin</Link>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ==================== APP ====================
 
 function App() {
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (product) => {
+    setCart((previousCart) => {
+      const existingProduct = previousCart.find(
+        (item) => item.id === product.id
+      );
+
+      if (existingProduct) {
+        return previousCart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+
+      return [...previousCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id) => {
+    updateQuantity(id, -1);
+  };
+
+  const updateQuantity = (id, change) => {
+    setCart((previousCart) =>
+      previousCart
+        .map((item) => {
+          if (item.id === id) {
+            const newQuantity = item.quantity + change;
+            return newQuantity > 0 ? { ...item, quantity: newQuantity } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
   return (
     <BrowserRouter>
-
-      {/* NAVBAR */}
-
-      <nav className="navbar">
-
-        <h2>
-          Flood Help Center
-        </h2>
-
-        <div className="nav-links">
-
-          <Link to="/">
-            Home
-          </Link>
-
-          <Link to="/affected-areas">
-            Affected Areas
-          </Link>
-
-          <Link to="/emergency">
-            Emergency
-          </Link>
-
-          <Link to="/about">
-            About
-          </Link>
-
-          <Link to="/contact">
-            Contact
-          </Link>
-
-          <Link to="/admin">
-            Admin
-          </Link>
-
-        </div>
-
-      </nav>
-
-      {/* ROUTES */}
+      <Navbar />
 
       <Routes>
+        <Route path="/" element={<Home />} />
+
+        <Route path="/affected-areas" element={<AffectedAreas />} />
+
+        <Route path="/emergency" element={<Emergency />} />
+
+        <Route path="/help" element={<Help />} />
 
         <Route
-          path="/"
-          element={<Home />}
+          path="/products"
+          element={
+            <Products
+              cart={cart}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+              updateQuantity={updateQuantity}
+              clearCart={clearCart}
+            />
+          }
         />
 
-        <Route
-          path="/affected-areas"
-          element={<AffectedAreas />}
-        />
+        <Route path="/about" element={<About />} />
 
-        <Route
-          path="/emergency"
-          element={<Emergency />}
-        />
+        <Route path="/contact" element={<Contact />} />
 
-        <Route
-          path="/help"
-          element={<Help />}
-        />
+        <Route path="/admin" element={<AdminLogin />} />
 
-        <Route
-          path="/about"
-          element={<About />}
-        />
+        <Route path="/admin/dashboard" element={<AdminRequests />} />
 
-        <Route
-          path="/contact"
-          element={<Contact />}
-        />
-
-        <Route
-          path="/admin"
-          element={<AdminLogin />}
-        />
-
-        <Route
-          path="/admin/dashboard"
-          element={<AdminRequests />}
-        />
-
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
     </BrowserRouter>
   );
 }
